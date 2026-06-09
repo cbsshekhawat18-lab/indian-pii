@@ -1,0 +1,68 @@
+{
+  "name": "indian-pii",
+  "version": "0.1.0",
+  "description": "Detect, validate & mask Indian PII in JavaScript — Aadhaar, PAN, GSTIN, UPI, Voter ID, Passport, IFSC, and more. Zero-dependency, browser + Node, real checksums. For privacy, redaction, KYC & DPDP compliance.",
+  "author": "Chandrabhan Shekhawat",
+  "homepage": "https://gigaikripaservices.com/",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "india",
+    "pii",
+    "aadhaar",
+    "pan",
+    "gstin",
+    "upi",
+    "voter-id",
+    "passport",
+    "ifsc",
+    "tan",
+    "cin",
+    "abha",
+    "uan",
+    "validation",
+    "redaction",
+    "mask",
+    "kyc",
+    "dpdp",
+    "privacy"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cbsshekhawat18-lab/indian-pii.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cbsshekhawat18-lab/indian-pii/issues"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}
