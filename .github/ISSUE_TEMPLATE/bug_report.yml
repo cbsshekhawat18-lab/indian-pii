@@ -1,0 +1,44 @@
+name: Bug report
+description: Report incorrect detection, validation, or masking
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. Please use **fabricated** sample values — never
+        post a real person's Aadhaar, PAN, card number, or other PII.
+  - type: input
+    id: version
+    attributes:
+      label: indian-pii version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: Runtime
+      options:
+        - Node (ESM)
+        - Node (CommonJS)
+        - Browser / bundler
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you call, what did you expect, and what did you get?
+      placeholder: |
+        detect("...") returned ... but I expected ...
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: A small code snippet (with fake values) that reproduces the issue.
+      render: js
+    validations:
+      required: true
