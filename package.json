@@ -1,6 +1,6 @@
 {
   "name": "indian-pii",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Detect, validate & mask Indian PII (Aadhaar, PAN, GSTIN, UPI, IFSC) in JavaScript — zero-dependency, real checksums, for redaction & KYC.",
   "author": "Chandrabhan Shekhawat",
   "homepage": "https://gigaikripaservices.com/",
