@@ -1,7 +1,7 @@
 {
   "name": "indian-pii",
   "version": "0.1.0",
-  "description": "Detect, validate & mask Indian PII in JavaScript — Aadhaar, PAN, GSTIN, UPI, Voter ID, Passport, IFSC, and more. Zero-dependency, browser + Node, real checksums. For privacy, redaction, KYC & DPDP compliance.",
+  "description": "Detect, validate & mask Indian PII (Aadhaar, PAN, GSTIN, UPI, IFSC) in JavaScript — zero-dependency, real checksums, for redaction & KYC.",
   "author": "Chandrabhan Shekhawat",
   "homepage": "https://gigaikripaservices.com/",
   "license": "MIT",
@@ -14,6 +14,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./image": {
+      "types": "./dist/image.d.ts",
+      "import": "./dist/image.js",
+      "require": "./dist/image.cjs"
     }
   },
   "sideEffects": false,
@@ -29,28 +34,30 @@
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",
+    "smoke": "node scripts/smoke.mjs",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
     "india",
     "pii",
+    "pii-detection",
     "aadhaar",
     "pan",
     "gstin",
     "upi",
+    "ifsc",
     "voter-id",
     "passport",
-    "ifsc",
-    "tan",
-    "cin",
     "abha",
-    "uan",
     "validation",
-    "redaction",
+    "checksum",
     "mask",
+    "data-masking",
+    "redaction",
     "kyc",
     "dpdp",
+    "ocr",
     "privacy"
   ],
   "repository": {

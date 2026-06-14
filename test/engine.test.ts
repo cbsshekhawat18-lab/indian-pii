@@ -35,6 +35,20 @@ describe("detect — context gating", () => {
   });
 });
 
+describe("detect — contextWindow", () => {
+  // Keyword far from the value: gated unless the window is widened to reach it.
+  const text = "PIN" + " ".repeat(50) + "560001";
+
+  it("does not match when the keyword is beyond the default window", () => {
+    expect(detect(text)).toHaveLength(0); // default window 40 < gap
+  });
+
+  it("matches when the window is widened to include the keyword", () => {
+    const r = detect(text, { contextWindow: 60 });
+    expect(r.map((x) => x.type)).toContain("pincode");
+  });
+});
+
 describe("detect — UPI vs email", () => {
   it("flags known-handle VPA but never a plain email", () => {
     expect(detect("pay ramesh@oksbi").map((r) => r.type)).toContain("upi_vpa");

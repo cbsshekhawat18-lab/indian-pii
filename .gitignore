@@ -1,8 +1,23 @@
+# dependencies & build output (build regenerates dist/)
 node_modules/
 dist/
 coverage/
+
+# logs & packaged tarballs
 *.log
-.DS_Store
+*.tgz
+
+# editor / IDE
 .idea/
 .vscode/
-*.tgz
+*.swp
+*.swo
+*~
+
+# OS junk
+.DS_Store
+._*
+__MACOSX/
+Thumbs.db
+*.tmp
+*.orig

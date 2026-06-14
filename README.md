@@ -37,6 +37,19 @@ detect("My PAN is ABCPK1234Z");
 mask("My PAN is ABCPK1234Z"); // "My PAN is AXXXXXXXXZ"
 ```
 
+## Use cases
+
+- **KYC & onboarding** — validate Aadhaar, PAN, GSTIN, IFSC, and other bank/tax
+  identifiers with genuine checksum and structure checks before you trust user
+  input.
+- **Redaction & log scrubbing** — automatically find and mask Indian PII in
+  application logs, support tickets, analytics events, and outbound payloads.
+- **DPDP Act compliance** — minimise and de-identify personal data in line with
+  India's Digital Personal Data Protection era, on the client or the server.
+- **ID-document processing (OCR)** — extract PII from scanned Aadhaar/PAN cards
+  via the optional [`indian-pii/image`](#images--ocr) layer and redact it with
+  pixel-accurate boxes.
+
 ## API reference
 
 ### `detect(text, options?) → DetectionResult[]`
@@ -114,6 +127,77 @@ detectors.map((d) => d.id);
 // ['aadhaar','card','gstin','abha','cin','pan','tan','voter_id','passport',
 //  'driving_licence','ifsc','demat','upi_vpa','uan','mobile_in','micr','din','pincode']
 ```
+
+## Images / OCR
+
+An **optional, dependency-free** layer at the subpath `indian-pii/image` lets you
+pull PII out of images. It does **not** perform OCR and ships **no** model — you
+run OCR yourself (e.g. with [Tesseract.js](https://github.com/naptha/tesseract.js)),
+hand the result to this layer, and it feeds the text back into the same core
+`detect()` engine and maps every hit to pixel boxes for redaction.
+
+```js
+import { createWorker } from "tesseract.js";          // YOUR OCR dependency
+import { fromTesseract, detectInImage, redactBoxes } from "indian-pii/image";
+
+const worker = await createWorker("eng");
+const { data } = await worker.recognize(imageFile);   // run OCR
+await worker.terminate();
+
+const ocr = fromTesseract(data);                       // normalise OCR output
+const results = detectInImage(ocr);                    // detect PII + boxes
+//  [{ type:'aadhaar', value:'2345 6789 0124', valid:true,
+//     bbox:{x,y,width,height}, boxes:[...3 word boxes], ocrConfidence:0.8, ... }]
+
+const ctx = canvas.getContext("2d");                   // browser canvas or node-canvas
+redactBoxes(ctx, results);                             // paint opaque boxes over PII
+```
+
+### `detectInImage(ocr, options?) → ImageDetectionResult[]`
+
+Reconstructs scan text from `ocr.words` (joined by a single-character `joiner`,
+default `" "`), runs core `detect()`, then maps each hit back to the OCR words its
+character range overlaps.
+
+| Param | Type | Description |
+|-------|------|-------------|
+| `ocr` | `OcrResult` | `{ words: OcrWord[], imageWidth?, imageHeight? }` |
+| `options.types` | `string[]` | Restrict to these detector ids. |
+| `options.requireValid` | `boolean` | Only return hits that pass validation. |
+| `options.contextWindow` | `number` | Chars each side searched for a keyword (default 40). |
+| `options.joiner` | `string` | One character joined between words (default `" "`). Throws `RangeError` if not length 1. |
+
+Each result is a core `DetectionResult` plus `bbox` (union box), `boxes` (the
+per-word boxes the hit spans), and `ocrConfidence` (mean confidence of those
+words, when available). Hits that land only on joiner characters are skipped.
+
+### `fromTesseract(data) → OcrResult`
+
+A pure transform (imports nothing) over the `data` object returned by
+Tesseract.js `worker.recognize()`. Converts corner coords `{x0,y0,x1,y1}` to
+top-left `{x,y,width,height}`, rescales confidence `0–100 → 0–1`, drops
+empty-text words, and tolerates missing/`null` input.
+
+### `redactBoxes(ctx, results, options?) → number`
+
+Paints opaque rectangles over detected PII and returns how many were drawn.
+`ctx` only needs `fillStyle` and `fillRect` (the structural `Fill2D` interface),
+so it works with the browser `CanvasRenderingContext2D` **and** node-canvas
+without importing either. Options: `color` (default `"#000"`), `padding` (default
+`2`), `perWord` (default `false` — fill the union box; set `true` for individual
+word boxes).
+
+> **Accuracy caveat.** OCR is imperfect — a misread digit changes the value, so a
+> checksum that *was* valid can fail (and, rarely, a wrong value can coincidentally
+> pass). A clean `detectInImage` pass is **not** proof of a real, active
+> identifier; treat it as a redaction aid, not verification.
+
+### Object detection (future seam)
+
+The types `RegionDetector` and `ObjectRegion` define a contract for detecting
+non-text regions (faces, signatures, QR codes). This is intentionally
+**unimplemented** — core ships **no** ML model to keep the zero-dependency
+promise. Bring your own detector that satisfies `RegionDetector` if you need it.
 
 ## Detector table
 
@@ -403,6 +487,39 @@ with zero failures means every detector and engine behaviour is verified.
 - **Boundary-safe** — values glued inside a longer alphanumeric run are ignored.
 - **ReDoS-safe** — all patterns are linear with bounded quantifiers.
 - **Normalization** — spaces/hyphens stripped and case folded where formats allow.
+
+## FAQ
+
+**Is any 12-digit number a valid Aadhaar?**
+No. A real Aadhaar's last digit is a Verhoeff check digit and it never starts
+with 0 or 1, so most random 12-digit numbers fail validation. `indian-pii`
+enforces the Verhoeff checksum, not just the length.
+
+**How do I validate a PAN or GSTIN checksum in JavaScript?**
+Call `validate("pan", value)` to check PAN structure and its holder-type
+character, and `validate("gstin", value)` to verify the 15-character structure,
+the state code, and the GSTN mod-36 check digit — both with zero dependencies, in
+Node or the browser.
+
+**Can it validate IFSC, TAN, CIN, ABHA, UAN, voter ID, or passport numbers too?**
+Yes — see the [detector table](#detector-table). Some identifiers are
+checksum-validated (Aadhaar, GSTIN, payment card, ABHA), others are
+structure-validated, and a few loose patterns are context-gated to avoid false
+positives.
+
+**Does a passing result mean the identifier is real or active?**
+No. Validation checks **format and checksums only** — it confirms a value is
+well-formed, not that it was issued or belongs to anyone. Never use it as proof
+of identity.
+
+**Does it work in the browser?**
+Yes. It is zero-dependency, ships ESM + CommonJS + TypeScript types, and is
+tree-shakeable.
+
+**Can it detect PII inside images?**
+Yes, via the optional [`indian-pii/image`](#images--ocr) subpath: you run OCR
+yourself (e.g. with Tesseract.js) and it maps detected PII back to pixel boxes
+for redaction. No OCR engine or model is bundled.
 
 ## Roadmap
 

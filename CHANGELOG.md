@@ -3,6 +3,25 @@
 All notable changes to **indian-pii** are documented here. This project adheres
 to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Optional, dependency-free image/OCR layer published at the subpath
+  `indian-pii/image`:
+  - `detectInImage(ocr, options?)` — reconstructs scan text from OCR words, runs
+    the existing core `detect()`, and maps each hit to pixel boxes (`bbox`,
+    per-word `boxes`, mean `ocrConfidence`).
+  - `fromTesseract(data)` — pure transform of Tesseract.js `recognize()` output
+    into the normalised `OcrResult` shape (imports nothing).
+  - `redactBoxes(ctx, results, options?)` — paints opaque boxes over detected PII
+    against a structural `Fill2D` canvas interface (works with browser canvas and
+    node-canvas without importing either).
+  - `RegionDetector` / `ObjectRegion` types as a future seam for object
+    detection (faces/signatures/QR) — no model ships with core.
+- The core string API is unchanged and remains string-only with zero runtime
+  dependencies.
+
 ## [0.1.0] — 2026-06-09
 
 ### Added
